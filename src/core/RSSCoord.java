@@ -14,36 +14,59 @@ import javax.xml.stream.events.XMLEvent;
 
 public enum RSSCoord {
 	INSTANCE;
+	private static final String TITLE = "title";
+	private static final String ITEM = "item";
+	private XMLInputFactory inputFactory;
+	private XMLEventReader eventReader;
+	private XMLEvent event;
 
 	public static RSSCoord getInstance() {
 		return RSSCoord.INSTANCE;
 	}
 
 	public RSSFeedBean loadRSSFeed(URL url) throws IOException, XMLStreamException {
-		List<RSSFeedBean> rssFeedMessages = new ArrayList<>();
-		RSSFeedBean rssFeed;
-		XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-		InputStream in = url.openStream();
-		XMLEventReader eventReader = inputFactory.createXMLEventReader(in);
+		List<RSSMessageBean> rssFeedMessages = new ArrayList<>();
+		RSSFeedBean rssBean;
+		RSSMessageBean messageBean;
+		String title = "";
+		
+		openXMLStreams(url);
 
 		// Read the XML
-		rssFeed = loadFeedHeader(eventReader);
-		System.out.println(rssFeed.getTitle());
+		rssBean = loadFeedHeader(eventReader);
 
 		while (eventReader.hasNext()) {
-			XMLEvent event = eventReader.nextEvent();
-			if(event.isStartElement()) {
+			event = eventReader.nextEvent();
+			if (event.isStartElement()) {
 				String localPart = event.asStartElement().getName().getLocalPart();
 				// TODO NEXT: Read the title/links for all the rss feed messages and add them to the rssFeed bean
-			} else if(event.isEndElement()) {
+				switch (localPart) {
+				case TITLE:
+					title = readCharacterData(eventReader);
+					break;
+				}
+			} else if (event.isEndElement()) {
+				if(event.asEndElement().getName().getLocalPart() == ITEM) {
+					messageBean = new RSSMessageBean();
+					messageBean.setTitle(title);
+					
+					rssFeedMessages.add(messageBean);
+				}
 			}
 		}
+		rssBean.setMessage(rssFeedMessages);
 
-		return rssFeed;
+		return rssBean;
+	}
+	
+	private void openXMLStreams(URL url) throws XMLStreamException, IOException {
+		inputFactory = XMLInputFactory.newInstance();
+		InputStream in = url.openStream();
+		eventReader = inputFactory.createXMLEventReader(in);
 	}
 
 	private RSSFeedBean loadFeedHeader(XMLEventReader eventReader) throws XMLStreamException {
-		XMLEvent event = eventReader.nextEvent();
+		event = eventReader.nextEvent();
 		String localPart = "";
 		RSSFeedBean bean = null;
 
@@ -51,7 +74,7 @@ public enum RSSCoord {
 			if (event.isStartElement()) {
 				localPart = event.asStartElement().getName().getLocalPart();
 				// Read the title of the header
-				if (localPart.equals("title")) {
+				if (localPart.equals(TITLE)) {
 					String feedTitle = readCharacterData(eventReader);
 					bean = new RSSFeedBean();
 					bean.setTitle(feedTitle);
@@ -62,12 +85,12 @@ public enum RSSCoord {
 
 		return bean;
 	}
-	
+
 	private String readCharacterData(XMLEventReader eventReader) throws XMLStreamException {
 		String data = "";
-		XMLEvent event = eventReader.nextEvent();
-		
-		if(event instanceof Characters) {
+		event = eventReader.nextEvent();
+
+		if (event instanceof Characters) {
 			data = event.asCharacters().getData();
 		}
 		return data;

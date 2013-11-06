@@ -1,11 +1,13 @@
-package GUI;
-
-import java.util.List;
+package gui;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+
+import core.RSSFeedBean;
+import core.RSSMessageBean;
 
 /**
  * Displays the list of news stories for an RSS feed in a JList
@@ -14,28 +16,45 @@ import javax.swing.JPanel;
  */
 @SuppressWarnings("serial")
 public class RSSFeedList extends JPanel {
-	private JList<String> feedList;
-	private DefaultListModel<String> rssModel;
+	private RSSFeedBean rssFeed;
+	// TODO NEXT: Implement this title label
+	private JLabel titleLabel;
+	private JList<RSSMessageBean> messageList;
+	private DefaultListModel<RSSMessageBean> rssModel;
 	private static final int NUMBER_OF_FEEDS = 10;
 	
 	public RSSFeedList() {
-		feedList = new JList<>();
-		feedList.setBorder(BorderFactory.createEtchedBorder());
+		setup();
+	}
+	
+	private void setup() {
+		titleLabel = new JLabel();
+		add(titleLabel);
+		
+		messageList = new JList<>();
+		messageList.setBorder(BorderFactory.createEtchedBorder());
 		rssModel = new DefaultListModel<>();
-		feedList.setModel(rssModel);
-		add(feedList);
+		messageList.setModel(rssModel);
+		add(messageList);
 	}
 	
 	/**
-	 * Sets the rss feed titles to be displayed in the list
-	 * @param titles to be displayed
+	 * @param rssFeed the rssFeed to set
 	 */
-	public void setRSSTitles(List<String> titles) {
+	public void setRssFeed(RSSFeedBean rssFeed) {
+		this.rssFeed = rssFeed;
+		titleLabel.setText(rssFeed.getTitle());
+	}
+
+	/**
+	 * Updates the RSS messages displayed in the list
+	 */
+	public void updateRSSMessages() {
 		rssModel.clear();
 		
 		// Add all the list data
 		for(int i = 0; i < NUMBER_OF_FEEDS; i++) {
-			rssModel.addElement(titles.get(i));
+			rssModel.addElement(rssFeed.getMessages().get(i));
 		}
 	}
 }

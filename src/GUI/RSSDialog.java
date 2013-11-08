@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
 public abstract class RSSDialog extends JDialog {
+	protected RSSEventListener rssEventListener;
 	protected GridBagConstraints gc;
 	protected JButton confirmButton;
 	protected JButton cancelButton;
@@ -18,9 +19,11 @@ public abstract class RSSDialog extends JDialog {
 	
 	public RSSDialog(JFrame frame, String title) {
 		super(frame, title, true);
+		setSize(400, 200);
 		setLayout(new GridBagLayout());
 		setLocationRelativeTo(frame);
 		setResizable(false);
+		gc = new GridBagConstraints();
 		
 		// Set up the button panel 
 		buttonPanel = new JPanel();
@@ -30,5 +33,12 @@ public abstract class RSSDialog extends JDialog {
 		cancelButton.setPreferredSize(confirmButton.getPreferredSize());
 		buttonPanel.add(confirmButton);
 		buttonPanel.add(cancelButton);
+	}
+	
+	/**
+	 * @param rssEventListener the rssEventListener to set
+	 */
+	public void setRSSEventListener(RSSEventListener rssEventListener) {
+		this.rssEventListener = rssEventListener;
 	}
 }

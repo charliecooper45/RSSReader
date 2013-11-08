@@ -1,5 +1,7 @@
 package gui;
 
+import java.awt.BorderLayout;
+
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
@@ -17,25 +19,25 @@ import core.RSSMessageBean;
 @SuppressWarnings("serial")
 public class RSSFeedList extends JPanel {
 	private RSSFeedBean rssFeed;
-	// TODO NEXT: Implement this title label
 	private JLabel titleLabel;
 	private JList<RSSMessageBean> messageList;
 	private DefaultListModel<RSSMessageBean> rssModel;
-	private static final int NUMBER_OF_FEEDS = 10;
 	
 	public RSSFeedList() {
 		setup();
 	}
 	
 	private void setup() {
+		setLayout(new BorderLayout());
 		titleLabel = new JLabel();
-		add(titleLabel);
-		
+		titleLabel.setHorizontalAlignment(JLabel.CENTER);
+		add(titleLabel, BorderLayout.NORTH);
 		messageList = new JList<>();
 		messageList.setBorder(BorderFactory.createEtchedBorder());
 		rssModel = new DefaultListModel<>();
 		messageList.setModel(rssModel);
-		add(messageList);
+		add(messageList, BorderLayout.CENTER);
+		setBorder(BorderFactory.createEtchedBorder());
 	}
 	
 	/**
@@ -53,8 +55,18 @@ public class RSSFeedList extends JPanel {
 		rssModel.clear();
 		
 		// Add all the list data
-		for(int i = 0; i < NUMBER_OF_FEEDS; i++) {
+		for(int i = 0; i < rssFeed.getMessages().size(); i++) {
 			rssModel.addElement(rssFeed.getMessages().get(i));
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return rssFeed.getTitle();
+	}
+		
+	
 }

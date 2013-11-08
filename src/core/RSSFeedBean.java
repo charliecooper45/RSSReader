@@ -41,6 +41,4 @@ public class RSSFeedBean implements Serializable{
 	public void setMessage(List<RSSMessageBean> message) {
 		this.message = message;
 	}
-	
-	
 }

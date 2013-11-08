@@ -1,5 +1,5 @@
 package gui;
 
 public interface DialogShownListener {
-	public void dialogShown();
+	public void dialogShown(DialogType type);
 }

@@ -24,7 +24,14 @@ public enum RSSCoord {
 		return RSSCoord.INSTANCE;
 	}
 
-	public RSSFeedBean loadRSSFeed(URL url) throws IOException, XMLStreamException {
+	/**
+	 * Creates an RSSFeedBean object that holds the data relevant to one RSS feed.
+	 * @param url of the RSS feed
+	 * @return the RSSFeedBean
+	 * @throws IOException
+	 * @throws XMLStreamException
+	 */
+	public synchronized RSSFeedBean loadRSSFeed(URL url) throws IOException, XMLStreamException {
 		List<RSSMessageBean> rssFeedMessages = new ArrayList<>();
 		RSSFeedBean rssBean;
 		RSSMessageBean messageBean;
@@ -39,7 +46,6 @@ public enum RSSCoord {
 			event = eventReader.nextEvent();
 			if (event.isStartElement()) {
 				String localPart = event.asStartElement().getName().getLocalPart();
-				// TODO NEXT: Read the title/links for all the rss feed messages and add them to the rssFeed bean
 				switch (localPart) {
 				case TITLE:
 					title = readCharacterData(eventReader);

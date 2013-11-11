@@ -12,10 +12,12 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.XMLEvent;
 
+//TODO NEXT: Save this to a file to allow sessions to be saved
 public enum RSSCoord {
 	INSTANCE;
 	private static final String TITLE = "title";
 	private static final String ITEM = "item";
+	private static final String LINK = "link";
 	private XMLInputFactory inputFactory;
 	private XMLEventReader eventReader;
 	private XMLEvent event;
@@ -36,6 +38,7 @@ public enum RSSCoord {
 		RSSFeedBean rssBean;
 		RSSMessageBean messageBean;
 		String title = "";
+		String link = "";
 		
 		openXMLStreams(url);
 
@@ -50,12 +53,16 @@ public enum RSSCoord {
 				case TITLE:
 					title = readCharacterData(eventReader);
 					break;
+				case LINK:
+					link = readCharacterData(eventReader);
+					break;
 				}
+					
 			} else if (event.isEndElement()) {
 				if(event.asEndElement().getName().getLocalPart() == ITEM) {
 					messageBean = new RSSMessageBean();
 					messageBean.setTitle(title);
-					
+					messageBean.setLink(link);
 					rssFeedMessages.add(messageBean);
 				}
 			}

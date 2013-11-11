@@ -3,7 +3,7 @@ package gui;
 import java.net.URL;
 
 /**
- * Listens for events involving the RSS feeds (either additions or deletions).
+ * Listens for events involving the RSS feeds 
  * @author Charlie
  *
  */

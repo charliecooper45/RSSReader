@@ -1,12 +1,9 @@
 package gui;
 
 import java.awt.BorderLayout;
-<<<<<<< HEAD
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-=======
->>>>>>> 671ea89... third commit
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -32,12 +29,8 @@ public class RSSFeedList extends JPanel {
 	private JLabel titleLabel;
 	private JList<RSSMessageBean> messageList;
 	private DefaultListModel<RSSMessageBean> rssModel;
-<<<<<<< HEAD
 	private RSSMessageSelectedListener rssMessageSelectedListener;
 
-=======
-	
->>>>>>> 671ea89... third commit
 	public RSSFeedList() {
 		setup();
 	}
@@ -83,16 +76,11 @@ public class RSSFeedList extends JPanel {
 		rssModel.clear();
 
 		// Add all the list data
-<<<<<<< HEAD
 		for (int i = 0; i < rssFeed.getMessages().size(); i++) {
-=======
-		for(int i = 0; i < rssFeed.getMessages().size(); i++) {
->>>>>>> 671ea89... third commit
 			rssModel.addElement(rssFeed.getMessages().get(i));
 		}
 	}
 
-<<<<<<< HEAD
 	/**
 	 * @param rssMessageSelectedListener the rssMessageSelectedListener to set
 	 */
@@ -100,8 +88,6 @@ public class RSSFeedList extends JPanel {
 		this.rssMessageSelectedListener = rssMessageSelectedListener;
 	}
 
-=======
->>>>>>> 671ea89... third commit
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -109,7 +95,6 @@ public class RSSFeedList extends JPanel {
 	public String toString() {
 		return rssFeed.getTitle();
 	}
-<<<<<<< HEAD
 
 	private class ListRenderer implements ListCellRenderer<RSSMessageBean> {
 		private JLabel label;
@@ -136,8 +121,4 @@ public class RSSFeedList extends JPanel {
 		}
 
 	}
-=======
-		
-	
->>>>>>> 671ea89... third commit
 }

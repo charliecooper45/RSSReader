@@ -4,23 +4,17 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-<<<<<<< HEAD
 import java.net.MalformedURLException;
-=======
->>>>>>> 671ea89... third commit
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-<<<<<<< HEAD
 
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-=======
->>>>>>> 671ea89... third commit
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -40,12 +34,7 @@ public class MainFrame extends JFrame {
 	private Toolbar toolbar;
 	private JSplitPane mainSplitPane;
 	private RSSFeedsPanel rssFeedsPanel;
-<<<<<<< HEAD
 	private RSSViewerPanel rssReaderPanel;
-=======
-	//TODO NEXT: Implement the HTML reader panel, reads the RSS feeds
-	private JPanel rssReaderPanel;
->>>>>>> 671ea89... third commit
 
 	public MainFrame() {
 		super("RSS Reader");
@@ -57,12 +46,7 @@ public class MainFrame extends JFrame {
 	private void setup() {
 		// Setup the different panels that are displayed on the screen
 		rssFeedsPanel = new RSSFeedsPanel();
-<<<<<<< HEAD
 		rssReaderPanel = new RSSViewerPanel();
-=======
-		rssReaderPanel = new JPanel();
-		rssReaderPanel.setBackground(Color.red);
->>>>>>> 671ea89... third commit
 		mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, rssFeedsPanel, rssReaderPanel);
 		mainSplitPane.setOneTouchExpandable(true);
 		add(mainSplitPane, BorderLayout.CENTER);
@@ -102,7 +86,6 @@ public class MainFrame extends JFrame {
 	
 	private class RSSFeedsPanel extends JPanel {
 		private List<RSSFeedList> rssFeeds;
-<<<<<<< HEAD
 		private RSSMessageSelectedListener rssMessageSelectedListener;
 		
 		public RSSFeedsPanel() {
@@ -113,11 +96,6 @@ public class MainFrame extends JFrame {
 					rssReaderPanel.loadURL(bean.getLink());
 				}
 			};
-=======
-		
-		public RSSFeedsPanel() {
-			rssFeeds = new ArrayList<>();
->>>>>>> 671ea89... third commit
 			setLayout(new GridLayout(3, 4));
 			setBackground(Color.green);
 			setMinimumSize(new Dimension(400, 0));
@@ -134,17 +112,10 @@ public class MainFrame extends JFrame {
 						if (rssFeedList != null) {
 							rssFeedsPanel.add(rssFeedList);
 							rssFeeds.add(rssFeedList);
-<<<<<<< HEAD
 							rssFeedList.setRssMessageSelectedListener(rssMessageSelectedListener);
 							toolbar.setRemoveButtonEnabled(true);
 							
 							if(rssFeeds.size() > 3) {
-=======
-							toolbar.setRemoveButtonEnabled(true);
-							
-							if(rssFeeds.size() > 3) {
-								System.out.println("MORE THAN 2");
->>>>>>> 671ea89... third commit
 								setMinimumSize(new Dimension(800, 0));
 								mainSplitPane.setDividerLocation(getMinimumSize().width);
 							}
@@ -184,7 +155,6 @@ public class MainFrame extends JFrame {
 			MainFrame.this.revalidate();
 			MainFrame.this.repaint();
 		}
-<<<<<<< HEAD
 	}
 	
 	private class RSSViewerPanel extends JPanel {
@@ -229,7 +199,5 @@ public class MainFrame extends JFrame {
 				JOptionPane.showMessageDialog(MainFrame.this, "Error", "Unable to load RSS link", JOptionPane.ERROR_MESSAGE);
 			}
 		}
-=======
->>>>>>> 671ea89... third commit
 	}
 }

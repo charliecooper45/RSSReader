@@ -1,6 +1,9 @@
 package core;
 
-public class RSSMessageBean {
+import java.io.Serializable;
+
+public class RSSMessageBean implements Serializable {
+	private static final long serialVersionUID = 2866560781240397732L;
 	private String title;
 	private String link;
 	private boolean read;

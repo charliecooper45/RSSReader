@@ -2,7 +2,12 @@ package core;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,12 +17,13 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.XMLEvent;
 
-//TODO NEXT: Save this to a file to allow sessions to be saved
 public enum RSSCoord {
 	INSTANCE;
 	private static final String TITLE = "title";
 	private static final String ITEM = "item";
 	private static final String LINK = "link";
+	private static final Path SESSION_FOLDER = Paths.get(System.getProperty("user.dir") + "/session");;
+	private static final Path SAVED_SESSION = Paths.get(SESSION_FOLDER + "/session.obj");
 	private XMLInputFactory inputFactory;
 	private XMLEventReader eventReader;
 	private XMLEvent event;
@@ -39,7 +45,7 @@ public enum RSSCoord {
 		RSSMessageBean messageBean;
 		String title = "";
 		String link = "";
-		
+
 		openXMLStreams(url);
 
 		// Read the XML
@@ -57,9 +63,9 @@ public enum RSSCoord {
 					link = readCharacterData(eventReader);
 					break;
 				}
-					
+
 			} else if (event.isEndElement()) {
-				if(event.asEndElement().getName().getLocalPart() == ITEM) {
+				if (event.asEndElement().getName().getLocalPart() == ITEM) {
 					messageBean = new RSSMessageBean();
 					messageBean.setTitle(title);
 					messageBean.setLink(link);
@@ -67,11 +73,53 @@ public enum RSSCoord {
 				}
 			}
 		}
-		rssBean.setMessage(rssFeedMessages);
+		rssBean.setMessages(rssFeedMessages);
+		rssBean.setUrl(url);
 
 		return rssBean;
 	}
 	
+	//TODO NEXT: Add method to update the RSSFeedBean with the latest feeds, this will have to use another SwingWorker that calls this method but does not create an RSSBean like the existing method 
+	/**
+	 * Updates a feed with the latest messages
+	 * @param bean to be updated
+	 */
+	public synchronized void updateRSSFeed(RSSFeedBean bean) {
+		
+	}
+
+	/**
+	 * Saves all the current RSS feeds and their state (whether messages are read or not) to the disk
+	 * @param feeds to be saved
+	 * @throws IOException 
+	 */
+	public void saveSession(List<RSSFeedBean> feeds) throws IOException {
+		if (!Files.exists(SESSION_FOLDER)) {
+			Files.createDirectory(SESSION_FOLDER);
+		}
+
+		ObjectOutputStream os = new ObjectOutputStream(Files.newOutputStream(SAVED_SESSION));
+		os.writeObject(feeds);
+		os.close();
+	}
+
+	/**
+	 * Checks for a previously saved session and if it is found load it into the program.
+	 * @throws IOException 
+	 * @throws ClassNotFoundException 
+	 */
+	@SuppressWarnings("unchecked")
+	public List<RSSFeedBean> loadSession() throws IOException, ClassNotFoundException {
+		List<RSSFeedBean> feeds = null;
+		if (Files.exists(SAVED_SESSION)) {
+			// Load the file
+			ObjectInputStream is = new ObjectInputStream(Files.newInputStream(SAVED_SESSION));
+			feeds = (List<RSSFeedBean>) is.readObject();
+			is.close();
+		}
+		return feeds;
+	}
+
 	private void openXMLStreams(URL url) throws XMLStreamException, IOException {
 		inputFactory = XMLInputFactory.newInstance();
 		InputStream in = url.openStream();

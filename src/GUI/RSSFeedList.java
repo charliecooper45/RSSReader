@@ -68,12 +68,21 @@ public class RSSFeedList extends JPanel {
 		this.rssFeed = rssFeed;
 		titleLabel.setText(rssFeed.getTitle());
 	}
+	
+	/**
+	 * @return the rssFeed
+	 */
+	public RSSFeedBean getRssFeed() {
+		return rssFeed;
+	}
 
 	/**
 	 * Updates the RSS messages displayed in the list
 	 */
 	public void updateRSSMessages() {
 		rssModel.clear();
+		
+		
 
 		// Add all the list data
 		for (int i = 0; i < rssFeed.getMessages().size(); i++) {

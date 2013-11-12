@@ -1,18 +1,21 @@
 package core;
 
 import java.io.Serializable;
+import java.net.URL;
 import java.util.List;
 
 /**
  * A bean class that represents a single RSS feed
  * @author Charlie
  */
-public class RSSFeedBean implements Serializable{
+public class RSSFeedBean implements Serializable {
 	private static final long serialVersionUID = 8043599524006529389L;
 	private List<RSSMessageBean> message;
 	private String title;
-	
-	public RSSFeedBean() {}
+	private URL url;
+
+	public RSSFeedBean() {
+	}
 
 	/**
 	 * @return the title
@@ -38,7 +41,24 @@ public class RSSFeedBean implements Serializable{
 	/**
 	 * @param message the message to set
 	 */
-	public void setMessage(List<RSSMessageBean> message) {
-		this.message = message;
+	public void setMessages(List<RSSMessageBean> message) {
+		// Only set the messages to a new object 
+		if (this.message == null) {
+			this.message = message;
+		}
+	}
+
+	/**
+	 * @return the url
+	 */
+	public URL getUrl() {
+		return url;
+	}
+
+	/**
+	 * @param url the url to set
+	 */
+	public void setUrl(URL url) {
+		this.url = url;
 	}
 }

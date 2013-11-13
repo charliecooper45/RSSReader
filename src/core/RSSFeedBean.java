@@ -42,10 +42,7 @@ public class RSSFeedBean implements Serializable {
 	 * @param message the message to set
 	 */
 	public void setMessages(List<RSSMessageBean> message) {
-		// Only set the messages to a new object 
-		if (this.message == null) {
-			this.message = message;
-		}
+		this.message = message;
 	}
 
 	/**

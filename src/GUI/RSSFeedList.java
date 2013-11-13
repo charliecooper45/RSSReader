@@ -47,8 +47,10 @@ public class RSSFeedList extends JPanel {
 			public void valueChanged(ListSelectionEvent e) {
 				if (!e.getValueIsAdjusting()) {
 					RSSMessageBean selectedValue = messageList.getSelectedValue();
-					rssMessageSelectedListener.messageRead(selectedValue);
-					selectedValue.setRead(true);
+					if (selectedValue != null) {
+						rssMessageSelectedListener.messageRead(selectedValue);
+						selectedValue.setRead(true);
+					}
 				}
 			}
 		});
@@ -68,7 +70,7 @@ public class RSSFeedList extends JPanel {
 		this.rssFeed = rssFeed;
 		titleLabel.setText(rssFeed.getTitle());
 	}
-	
+
 	/**
 	 * @return the rssFeed
 	 */
@@ -81,8 +83,6 @@ public class RSSFeedList extends JPanel {
 	 */
 	public void updateRSSMessages() {
 		rssModel.clear();
-		
-		
 
 		// Add all the list data
 		for (int i = 0; i < rssFeed.getMessages().size(); i++) {
@@ -119,7 +119,7 @@ public class RSSFeedList extends JPanel {
 		@Override
 		public Component getListCellRendererComponent(JList<? extends RSSMessageBean> list, RSSMessageBean bean, int index, boolean isSelected, boolean cellHasFocus) {
 			label.setText(bean.getTitle());
-			label.setForeground(isSelected ? Color.red : Color.black);
+			label.setForeground(bean.isSelected() ? Color.red : Color.black);
 
 			if (bean.isRead()) {
 				label.setFont(plainFont);

@@ -12,6 +12,7 @@ public class Toolbar extends JToolBar {
 	private DialogShownListener dialogShownListener;
 	private ButtonListener buttonListener;
 	private JButton addFeedButton;
+	private JButton refreshFeedsButton;
 	private JButton removeFeedButton;
 
 	public Toolbar() {
@@ -24,6 +25,12 @@ public class Toolbar extends JToolBar {
 		addFeedButton.setToolTipText("Add an RSS Feed");
 		addFeedButton.addActionListener(buttonListener);
 		add(addFeedButton);
+		
+		refreshFeedsButton = new JButton();
+		refreshFeedsButton.setIcon(Utils.createIcon("/resources/images/refresh-icon.png"));
+		refreshFeedsButton.setToolTipText("Refresh the RSS feeds");
+		refreshFeedsButton.addActionListener(buttonListener);
+		add(refreshFeedsButton);
 
 		removeFeedButton = new JButton("Remove Feed");
 		removeFeedButton.setIcon(Utils.createIcon("/resources/images/remove-icon.png"));
@@ -58,8 +65,10 @@ public class Toolbar extends JToolBar {
 
 			if (source == addFeedButton) {
 				dialogShownListener.dialogShown(DialogType.ADD_RSS_FEED);
-			} else {
+			} else if (source == removeFeedButton){
 				dialogShownListener.dialogShown(DialogType.REMOVE_RSS_FEED);
+			} else if (source == refreshFeedsButton) {
+				dialogShownListener.dialogShown(DialogType.REFRESH_RSS_FEEDS);
 			}
 		}
 

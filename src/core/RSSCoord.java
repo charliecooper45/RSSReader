@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.stream.XMLEventReader;
@@ -39,17 +40,50 @@ public enum RSSCoord {
 	 * @throws IOException
 	 * @throws XMLStreamException
 	 */
-	public synchronized RSSFeedBean loadRSSFeed(URL url) throws IOException, XMLStreamException {
+	public RSSFeedBean loadRSSFeed(URL url) throws IOException, XMLStreamException {
 		List<RSSMessageBean> rssFeedMessages = new ArrayList<>();
 		RSSFeedBean rssBean;
+
+		// Read the XML
+		synchronized (this) {
+			openXMLStreams(url);
+			rssBean = loadFeedHeader(eventReader);
+			rssFeedMessages = readRSSMessages(url);
+		}
+		rssBean.setMessages(rssFeedMessages);
+		rssBean.setUrl(url);
+
+		return rssBean;
+	}
+
+	//TODO NEXT: Add method to update the RSSFeedBean with the latest feeds, this will have to use another SwingWorker that calls this method but does not create an RSSBean like the existing method 
+	/**
+	 * Updates a feed with the latest messages
+	 * @param bean to be updated
+	 * @throws IOException 
+	 * @throws XMLStreamException 
+	 */
+	public void updateRSSFeed(RSSFeedBean bean) throws XMLStreamException, IOException {
+		List<RSSMessageBean> updatedMessages;
+		List<RSSMessageBean> currentMessages = bean.getMessages();
+		URL url = bean.getUrl();
+		
+		synchronized (this) {
+			openXMLStreams(url);
+			updatedMessages = readRSSMessages(url);
+		}
+		updatedMessages.removeAll(currentMessages);
+		if(!updatedMessages.isEmpty()) {
+			System.out.println("New messages added");
+			currentMessages.addAll(0, updatedMessages);
+		}
+	}
+
+	private List<RSSMessageBean> readRSSMessages(URL url) throws XMLStreamException, IOException {
+		List<RSSMessageBean> rssFeedMessages = new ArrayList<>();
 		RSSMessageBean messageBean;
 		String title = "";
 		String link = "";
-
-		openXMLStreams(url);
-
-		// Read the XML
-		rssBean = loadFeedHeader(eventReader);
 
 		while (eventReader.hasNext()) {
 			event = eventReader.nextEvent();
@@ -73,19 +107,8 @@ public enum RSSCoord {
 				}
 			}
 		}
-		rssBean.setMessages(rssFeedMessages);
-		rssBean.setUrl(url);
 
-		return rssBean;
-	}
-	
-	//TODO NEXT: Add method to update the RSSFeedBean with the latest feeds, this will have to use another SwingWorker that calls this method but does not create an RSSBean like the existing method 
-	/**
-	 * Updates a feed with the latest messages
-	 * @param bean to be updated
-	 */
-	public synchronized void updateRSSFeed(RSSFeedBean bean) {
-		
+		return rssFeedMessages;
 	}
 
 	/**
@@ -107,14 +130,19 @@ public enum RSSCoord {
 	 * Checks for a previously saved session and if it is found load it into the program.
 	 * @throws IOException 
 	 * @throws ClassNotFoundException 
+	 * @throws XMLStreamException 
 	 */
 	@SuppressWarnings("unchecked")
-	public List<RSSFeedBean> loadSession() throws IOException, ClassNotFoundException {
+	public List<RSSFeedBean> loadSession() throws IOException, ClassNotFoundException, XMLStreamException {
 		List<RSSFeedBean> feeds = null;
 		if (Files.exists(SAVED_SESSION)) {
 			// Load the file
 			ObjectInputStream is = new ObjectInputStream(Files.newInputStream(SAVED_SESSION));
 			feeds = (List<RSSFeedBean>) is.readObject();
+			// Update all the feeds with the latest messages
+			for(RSSFeedBean bean : feeds) {
+				updateRSSFeed(bean);
+			}
 			is.close();
 		}
 		return feeds;

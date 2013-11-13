@@ -52,6 +52,7 @@ public class MainFrame extends JFrame {
 					feeds.add(list.getRssFeed());
 				}
 				try {
+					rssFeedsPanel.selectedBean.setSelected(false);
 					coord.saveSession(feeds);
 				} catch (IOException exception) {
 					JOptionPane.showMessageDialog(MainFrame.this, "Could not save session data", "Error", JOptionPane.ERROR_MESSAGE);
@@ -83,28 +84,54 @@ public class MainFrame extends JFrame {
 					AddRSSDialog addDialog = new AddRSSDialog(MainFrame.this);
 					addDialog.setRSSEventListener(rssEventListener);
 					addDialog.setVisible(true);
-				} else {
+				} else if (type == DialogType.REMOVE_RSS_FEED) {
 					RemoveRSSDialog removeDialog = new RemoveRSSDialog(MainFrame.this, rssFeedsPanel.rssFeeds);
 					removeDialog.setRSSEventListener(rssEventListener);
 					removeDialog.setVisible(true);
+				} else if (type == DialogType.REFRESH_RSS_FEEDS) {
+					//TODO NEXT: Make sure only one RSS feed can be displayed as red and it remains red after the update
+					//TODO NEXT: Maybe use the second Void object here with the process() method
+					//TODO NEXT: set up automated refreshes
+					SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+						@Override
+						protected void done() {
+							for(RSSFeedList list : rssFeedsPanel.rssFeeds) {
+								list.updateRSSMessages();
+							}
+							super.done();
+						}
+						@Override
+						protected Void doInBackground() throws Exception {
+							for (RSSFeedList list : rssFeedsPanel.rssFeeds) {
+								try {
+									coord.updateRSSFeed(list.getRssFeed());
+									System.out.println("RSS FEED MESSAGES:" + list.getRssFeed().getMessages());
+								} catch (XMLStreamException | IOException e) {
+									JOptionPane.showMessageDialog(MainFrame.this, "Could not update RSS feeds", "Error", JOptionPane.ERROR_MESSAGE);
+								}
+							}
+							return null;
+						}
+					};
+					worker.execute();
 				}
 			}
 		});
 		add(toolbar, BorderLayout.NORTH);
-		
+
 		// Setup the different panels that are displayed on the screen
 		try {
 			feedBeans = coord.loadSession();
-		} catch (ClassNotFoundException | IOException e1) {
+		} catch (ClassNotFoundException | IOException | XMLStreamException e1) {
 			JOptionPane.showMessageDialog(MainFrame.this, "Could not load session data", "Error", JOptionPane.ERROR_MESSAGE);
 		}
 		rssFeedsPanel = new RSSFeedsPanel();
-		if (feedBeans != null) 
-			rssFeedsPanel.setRSSFeed(feedBeans);
 
 		rssReaderPanel = new RSSViewerPanel();
 		mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, rssFeedsPanel, rssReaderPanel);
 		mainSplitPane.setOneTouchExpandable(true);
+		if (feedBeans != null) 
+			rssFeedsPanel.setRSSFeed(feedBeans);
 		add(mainSplitPane, BorderLayout.CENTER);
 	}
 
@@ -113,13 +140,21 @@ public class MainFrame extends JFrame {
 		//TODO NEXT: read some code
 		private List<RSSFeedList> rssFeeds;
 		private RSSMessageSelectedListener rssMessageSelectedListener;
+		private RSSMessageBean selectedBean; 
 
 		public RSSFeedsPanel() {
 			rssFeeds = new ArrayList<>();
 			rssMessageSelectedListener = new RSSMessageSelectedListener() {
 				@Override
 				public void messageRead(RSSMessageBean bean) {
+					if(selectedBean != null)
+						selectedBean.setSelected(false);
 					rssReaderPanel.loadURL(bean.getLink());
+					selectedBean = bean;
+					selectedBean.setSelected(true);
+					for(RSSFeedList list : rssFeeds) {
+						list.repaint();
+					}
 				}
 			};
 			setLayout(new GridLayout(3, 4));
@@ -132,7 +167,7 @@ public class MainFrame extends JFrame {
 		 * @param feeds
 		 */
 		public void setRSSFeed(List<RSSFeedBean> feeds) {
-			for(RSSFeedBean bean : feeds) {
+			for (RSSFeedBean bean : feeds) {
 				addRSSFeedList(bean);
 			}
 		}
@@ -166,7 +201,7 @@ public class MainFrame extends JFrame {
 			};
 			worker.execute();
 		}
-		
+
 		private void addRSSFeedList(RSSFeedBean feedBean) {
 			RSSFeedList rssFeedList = new RSSFeedList();
 			rssFeedList.setRssFeed(feedBean);
@@ -236,7 +271,7 @@ public class MainFrame extends JFrame {
 					}
 				});
 			} catch (MalformedURLException e) {
-				JOptionPane.showMessageDialog(MainFrame.this, "Error", "Unable to load RSS link", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(MainFrame.this, "Unable to load RSS link", "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 	}

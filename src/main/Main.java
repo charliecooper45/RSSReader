@@ -17,20 +17,12 @@ import javax.xml.stream.XMLStreamException;
  */
 public class Main {
 	public static void main(String[] args) throws IOException, XMLStreamException {
-		final URL myURL = new URL("http://www.drdobbs.com/articles/jvm/rss");
-		
 		SwingUtilities.invokeLater(new Runnable() {
 			
 			@Override
 			public void run() {
 				JFrame frame = new MainFrame();
 				frame.setVisible(true);
-				try {
-					readXML(myURL);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 			}
 		});
 	}

@@ -52,7 +52,9 @@ public class MainFrame extends JFrame {
 					feeds.add(list.getRssFeed());
 				}
 				try {
-					rssFeedsPanel.selectedBean.setSelected(false);
+					// Make sure there is not bean selected when the program is close
+					if(rssFeedsPanel.selectedBean != null)
+						rssFeedsPanel.selectedBean.setSelected(false);
 					coord.saveSession(feeds);
 				} catch (IOException exception) {
 					JOptionPane.showMessageDialog(MainFrame.this, "Could not save session data", "Error", JOptionPane.ERROR_MESSAGE);
@@ -89,8 +91,6 @@ public class MainFrame extends JFrame {
 					removeDialog.setRSSEventListener(rssEventListener);
 					removeDialog.setVisible(true);
 				} else if (type == DialogType.REFRESH_RSS_FEEDS) {
-					//TODO NEXT: Make sure only one RSS feed can be displayed as red and it remains red after the update
-					//TODO NEXT: Maybe use the second Void object here with the process() method
 					//TODO NEXT: set up automated refreshes
 					SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 						@Override
@@ -100,6 +100,7 @@ public class MainFrame extends JFrame {
 							}
 							super.done();
 						}
+						
 						@Override
 						protected Void doInBackground() throws Exception {
 							for (RSSFeedList list : rssFeedsPanel.rssFeeds) {

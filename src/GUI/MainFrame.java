@@ -12,6 +12,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
@@ -23,6 +26,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.xml.stream.XMLStreamException;
 
@@ -93,6 +97,7 @@ public class MainFrame extends JFrame {
 				} else if (type == DialogType.REFRESH_RSS_FEEDS) {
 					//TODO NEXT: set up automated refreshes
 					SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+						//TODO NEXT: Duplication of code here, move into a method in the RSSFeedsPanel class
 						@Override
 						protected void done() {
 							for(RSSFeedList list : rssFeedsPanel.rssFeeds) {
@@ -142,6 +147,7 @@ public class MainFrame extends JFrame {
 		private List<RSSFeedList> rssFeeds;
 		private RSSMessageSelectedListener rssMessageSelectedListener;
 		private RSSMessageBean selectedBean; 
+		private final ScheduledExecutorService scheduler;
 
 		public RSSFeedsPanel() {
 			rssFeeds = new ArrayList<>();
@@ -161,6 +167,34 @@ public class MainFrame extends JFrame {
 			setLayout(new GridLayout(3, 4));
 			setBackground(Color.green);
 			setMinimumSize(new Dimension(400, 0));
+			
+			// Setup the automatic scheduling that refreshes the contents of the RSS feeds
+			scheduler = Executors.newScheduledThreadPool(1);
+			Runnable task = new Runnable() {
+				
+				@Override
+				public void run() {
+					for (RSSFeedList list : rssFeeds) {
+						try {
+							coord.updateRSSFeed(list.getRssFeed());
+						} catch (XMLStreamException | IOException e) {
+							JOptionPane.showMessageDialog(MainFrame.this, "Could not update RSS feeds", "Error", JOptionPane.ERROR_MESSAGE);
+						}
+					}
+					
+					SwingUtilities.invokeLater(new Runnable() {
+						
+						@Override
+						public void run() {
+							for(RSSFeedList list : rssFeeds) {
+								list.updateRSSMessages();
+								System.out.println("RSS FEED MESSAGES:" + list.getRssFeed().getMessages());
+							}
+						}
+					});
+				}
+			};
+			scheduler.scheduleAtFixedRate(task, 0, 10, TimeUnit.SECONDS);
 		}
 
 		/**

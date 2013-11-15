@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.xml.stream.XMLEventReader;
@@ -45,11 +44,10 @@ public enum RSSCoord {
 		RSSFeedBean rssBean;
 
 		// Read the XML
-		synchronized (this) {
-			openXMLStreams(url);
-			rssBean = loadFeedHeader(eventReader);
-			rssFeedMessages = readRSSMessages(url);
-		}
+		openXMLStreams(url);
+		rssBean = loadFeedHeader(eventReader);
+		rssFeedMessages = readRSSMessages(url);
+		
 		rssBean.setMessages(rssFeedMessages);
 		rssBean.setUrl(url);
 
@@ -68,10 +66,9 @@ public enum RSSCoord {
 		List<RSSMessageBean> currentMessages = bean.getMessages();
 		URL url = bean.getUrl();
 		
-		synchronized (this) {
-			openXMLStreams(url);
-			updatedMessages = readRSSMessages(url);
-		}
+		openXMLStreams(url);
+		updatedMessages = readRSSMessages(url);
+		
 		updatedMessages.removeAll(currentMessages);
 		if(!updatedMessages.isEmpty()) {
 			System.out.println("New messages added");
@@ -140,6 +137,7 @@ public enum RSSCoord {
 			ObjectInputStream is = new ObjectInputStream(Files.newInputStream(SAVED_SESSION));
 			feeds = (List<RSSFeedBean>) is.readObject();
 			// Update all the feeds with the latest messages
+			//TODO NEXT: Possible remove this?
 			for(RSSFeedBean bean : feeds) {
 				updateRSSFeed(bean);
 			}

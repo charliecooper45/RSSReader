@@ -20,9 +20,9 @@ public class Utils {
 		return icon;
 	}
 	
-	public static void setGBC(GridBagConstraints gc, int row, int column, int width, int height, int fill) {
-		gc.gridx = row;
-		gc.gridy = column;
+	public static void setGBC(GridBagConstraints gc, int column, int row, int width, int height, int fill) {
+		gc.gridx = column;
+		gc.gridy = row;
 		gc.gridwidth = width;
 		gc.gridheight = height;
 		gc.fill = fill;

@@ -54,14 +54,13 @@ public enum RSSCoord {
 		return rssBean;
 	}
 
-	//TODO NEXT: Add method to update the RSSFeedBean with the latest feeds, this will have to use another SwingWorker that calls this method but does not create an RSSBean like the existing method 
 	/**
 	 * Updates a feed with the latest messages
 	 * @param bean to be updated
 	 * @throws IOException 
 	 * @throws XMLStreamException 
 	 */
-	public void updateRSSFeed(RSSFeedBean bean) throws XMLStreamException, IOException {
+	public synchronized void updateRSSFeed(RSSFeedBean bean) throws XMLStreamException, IOException {
 		List<RSSMessageBean> updatedMessages;
 		List<RSSMessageBean> currentMessages = bean.getMessages();
 		URL url = bean.getUrl();

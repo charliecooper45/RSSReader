@@ -34,9 +34,10 @@ import core.RSSCoord;
 import core.RSSFeedBean;
 import core.RSSMessageBean;
 
-// TODO NEXT: Observerable? Use the Observer pattern to keep RSSFeedLists updated - refresh functionality
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame {
+	static int refreshRate = 3;
+	static boolean refreshFeeds = false;
 	private RSSCoord coord = RSSCoord.getInstance();
 	private Toolbar toolbar;
 	private JSplitPane mainSplitPane;
@@ -69,6 +70,7 @@ public class MainFrame extends JFrame {
 	}
 
 	private void setup() {
+		// TODO NEXT: Implement the settings code (preferences api).
 		// Setup the toolbar
 		final RSSEventListener rssEventListener = new RSSEventListener() {
 			@Override
@@ -95,31 +97,10 @@ public class MainFrame extends JFrame {
 					removeDialog.setRSSEventListener(rssEventListener);
 					removeDialog.setVisible(true);
 				} else if (type == DialogType.REFRESH_RSS_FEEDS) {
-					//TODO NEXT: set up automated refreshes
-					SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
-						//TODO NEXT: Duplication of code here, move into a method in the RSSFeedsPanel class
-						@Override
-						protected void done() {
-							for(RSSFeedList list : rssFeedsPanel.rssFeeds) {
-								list.updateRSSMessages();
-							}
-							super.done();
-						}
-						
-						@Override
-						protected Void doInBackground() throws Exception {
-							for (RSSFeedList list : rssFeedsPanel.rssFeeds) {
-								try {
-									coord.updateRSSFeed(list.getRssFeed());
-									System.out.println("RSS FEED MESSAGES:" + list.getRssFeed().getMessages());
-								} catch (XMLStreamException | IOException e) {
-									JOptionPane.showMessageDialog(MainFrame.this, "Could not update RSS feeds", "Error", JOptionPane.ERROR_MESSAGE);
-								}
-							}
-							return null;
-						}
-					};
-					worker.execute();
+					rssFeedsPanel.scheduler.schedule(rssFeedsPanel.updateFeedsTask, 0, TimeUnit.SECONDS);
+				} else if (type == DialogType.SETTINGS) {
+					SettingsDialog settingsDialog = new SettingsDialog(MainFrame.this);
+					settingsDialog.setVisible(true);
 				}
 			}
 		});
@@ -132,7 +113,6 @@ public class MainFrame extends JFrame {
 			JOptionPane.showMessageDialog(MainFrame.this, "Could not load session data", "Error", JOptionPane.ERROR_MESSAGE);
 		}
 		rssFeedsPanel = new RSSFeedsPanel();
-
 		rssReaderPanel = new RSSViewerPanel();
 		mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, rssFeedsPanel, rssReaderPanel);
 		mainSplitPane.setOneTouchExpandable(true);
@@ -148,6 +128,7 @@ public class MainFrame extends JFrame {
 		private RSSMessageSelectedListener rssMessageSelectedListener;
 		private RSSMessageBean selectedBean; 
 		private final ScheduledExecutorService scheduler;
+		private Runnable updateFeedsTask;
 
 		public RSSFeedsPanel() {
 			rssFeeds = new ArrayList<>();
@@ -170,7 +151,7 @@ public class MainFrame extends JFrame {
 			
 			// Setup the automatic scheduling that refreshes the contents of the RSS feeds
 			scheduler = Executors.newScheduledThreadPool(1);
-			Runnable task = new Runnable() {
+			updateFeedsTask = new Runnable() {
 				
 				@Override
 				public void run() {
@@ -194,7 +175,7 @@ public class MainFrame extends JFrame {
 					});
 				}
 			};
-			scheduler.scheduleAtFixedRate(task, 0, 10, TimeUnit.SECONDS);
+			scheduler.scheduleAtFixedRate(updateFeedsTask, refreshRate, refreshRate, TimeUnit.MINUTES);
 		}
 
 		/**

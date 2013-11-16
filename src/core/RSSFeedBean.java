@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class RSSFeedBean implements Serializable {
 	private static final long serialVersionUID = 8043599524006529389L;
-	private List<RSSMessageBean> message;
+	private volatile List<RSSMessageBean> messages;
 	private String title;
 	private URL url;
 
@@ -35,14 +35,14 @@ public class RSSFeedBean implements Serializable {
 	 * @return the message
 	 */
 	public List<RSSMessageBean> getMessages() {
-		return message;
+		return messages;
 	}
 
 	/**
-	 * @param message the message to set
+	 * @param messages the messages to set
 	 */
-	public void setMessages(List<RSSMessageBean> message) {
-		this.message = message;
+	public void setMessages(List<RSSMessageBean> messages) {
+		this.messages = messages;
 	}
 
 	/**

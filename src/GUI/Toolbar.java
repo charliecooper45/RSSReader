@@ -14,6 +14,7 @@ public class Toolbar extends JToolBar {
 	private JButton addFeedButton;
 	private JButton refreshFeedsButton;
 	private JButton removeFeedButton;
+	private JButton settingsButton;
 
 	public Toolbar() {
 		buttonListener = new ButtonListener();
@@ -38,6 +39,12 @@ public class Toolbar extends JToolBar {
 		removeFeedButton.addActionListener(buttonListener);
 		removeFeedButton.setEnabled(false);
 		add(removeFeedButton);
+		
+		settingsButton = new JButton();
+		settingsButton.setIcon(Utils.createIcon("/resources/images/settings-icon.png"));
+		settingsButton.setToolTipText("Settings");
+		settingsButton.addActionListener(buttonListener);
+		add(settingsButton);
 
 		addFeedButton.setPreferredSize(removeFeedButton.getPreferredSize());
 	}
@@ -69,6 +76,8 @@ public class Toolbar extends JToolBar {
 				dialogShownListener.dialogShown(DialogType.REMOVE_RSS_FEED);
 			} else if (source == refreshFeedsButton) {
 				dialogShownListener.dialogShown(DialogType.REFRESH_RSS_FEEDS);
+			} else if (source == settingsButton) {
+				dialogShownListener.dialogShown(DialogType.SETTINGS);
 			}
 		}
 

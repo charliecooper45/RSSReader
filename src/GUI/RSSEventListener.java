@@ -10,4 +10,5 @@ import java.net.URL;
 public interface RSSEventListener {
 	public void rssFeedAdded(URL url);
 	public void rssFeedRemoved(RSSFeedList rssFeedList);
+	public void settingsChanged(boolean refreshFeeds, int refreshGap);
 }

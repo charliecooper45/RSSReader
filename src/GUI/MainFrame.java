@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.prefs.Preferences;
 
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
@@ -36,9 +37,10 @@ import core.RSSMessageBean;
 
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame {
-	static int refreshRate = 3;
-	static boolean refreshFeeds = false;
+	static int refreshRate = 2;
+	static boolean refreshFeeds = true;
 	private RSSCoord coord = RSSCoord.getInstance();
+	private Preferences prefs;
 	private Toolbar toolbar;
 	private JSplitPane mainSplitPane;
 	private RSSFeedsPanel rssFeedsPanel;
@@ -52,6 +54,9 @@ public class MainFrame extends JFrame {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
+				
+				
+				rssFeedsPanel.cancelAutomaticUpdates();
 				List<RSSFeedBean> feeds = new ArrayList<>();
 				for (RSSFeedList list : rssFeedsPanel.rssFeeds) {
 					feeds.add(list.getRssFeed());
@@ -66,6 +71,10 @@ public class MainFrame extends JFrame {
 				}
 			}
 		});
+		// Load user preferences
+		prefs = Preferences.userRoot().node("RSSFeedApplication");
+		refreshFeeds = prefs.getBoolean("refreshFeeds", true);
+		refreshRate = prefs.getInt("refreshRate", 2);
 		setup();
 	}
 
@@ -82,6 +91,20 @@ public class MainFrame extends JFrame {
 			public void rssFeedRemoved(RSSFeedList rssFeedList) {
 				rssFeedsPanel.removeRSSFeed(rssFeedList);
 			}
+
+			@Override
+			public void settingsChanged(boolean refreshFeeds, int refreshRate) {
+				MainFrame.refreshFeeds = refreshFeeds;
+				MainFrame.refreshRate = refreshRate;
+				prefs.putBoolean("refreshFeeds", refreshFeeds);
+				prefs.putInt("refreshRate", refreshRate);
+				if(!refreshFeeds) {
+					rssFeedsPanel.cancelAutomaticUpdates();
+				} else {
+					rssFeedsPanel.startAutomaticUpdates();
+				}
+			}
+			
 		};
 		toolbar = new Toolbar();
 		toolbar.setDialogShownListener(new DialogShownListener() {
@@ -100,6 +123,7 @@ public class MainFrame extends JFrame {
 					rssFeedsPanel.scheduler.schedule(rssFeedsPanel.updateFeedsTask, 0, TimeUnit.SECONDS);
 				} else if (type == DialogType.SETTINGS) {
 					SettingsDialog settingsDialog = new SettingsDialog(MainFrame.this);
+					settingsDialog.setRSSEventListener(rssEventListener);
 					settingsDialog.setVisible(true);
 				}
 			}
@@ -127,7 +151,7 @@ public class MainFrame extends JFrame {
 		private List<RSSFeedList> rssFeeds;
 		private RSSMessageSelectedListener rssMessageSelectedListener;
 		private RSSMessageBean selectedBean; 
-		private final ScheduledExecutorService scheduler;
+		private ScheduledExecutorService scheduler;
 		private Runnable updateFeedsTask;
 
 		public RSSFeedsPanel() {
@@ -149,7 +173,7 @@ public class MainFrame extends JFrame {
 			setBackground(Color.green);
 			setMinimumSize(new Dimension(400, 0));
 			
-			// Setup the automatic scheduling that refreshes the contents of the RSS feeds
+			// Setup the task that refreshes the contents of the RSS feeds
 			scheduler = Executors.newScheduledThreadPool(1);
 			updateFeedsTask = new Runnable() {
 				
@@ -157,6 +181,7 @@ public class MainFrame extends JFrame {
 				public void run() {
 					for (RSSFeedList list : rssFeeds) {
 						try {
+							//TODO NEXT: Possible synchronize on the list object? Instead of in the coord
 							coord.updateRSSFeed(list.getRssFeed());
 						} catch (XMLStreamException | IOException e) {
 							JOptionPane.showMessageDialog(MainFrame.this, "Could not update RSS feeds", "Error", JOptionPane.ERROR_MESSAGE);
@@ -164,7 +189,6 @@ public class MainFrame extends JFrame {
 					}
 					
 					SwingUtilities.invokeLater(new Runnable() {
-						
 						@Override
 						public void run() {
 							for(RSSFeedList list : rssFeeds) {
@@ -175,7 +199,9 @@ public class MainFrame extends JFrame {
 					});
 				}
 			};
-			scheduler.scheduleAtFixedRate(updateFeedsTask, refreshRate, refreshRate, TimeUnit.MINUTES);
+			if(refreshFeeds) {
+				startAutomaticUpdates();
+			}
 		}
 
 		/**
@@ -186,6 +212,34 @@ public class MainFrame extends JFrame {
 			for (RSSFeedBean bean : feeds) {
 				addRSSFeedList(bean);
 			}
+		}
+		
+		/**
+		 * Cancels the thread updating the RSS feeds automatically
+		 * @throws InterruptedException 
+		 */
+		public void cancelAutomaticUpdates() {
+			if(scheduler != null) {
+				// Cancel scheduled but not started task, and avoid new ones
+			    scheduler.shutdown();
+
+			    // Wait for the running tasks 
+			    try {
+					scheduler.awaitTermination(10, TimeUnit.SECONDS);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+
+			    // Interrupt the threads and shutdown the scheduler
+			    scheduler.shutdownNow();
+			    
+			    // Start a new scheduler for manual updates
+			    scheduler = Executors.newScheduledThreadPool(1);
+			}
+		}
+		
+		public void startAutomaticUpdates() {
+			scheduler.scheduleAtFixedRate(updateFeedsTask, refreshRate, refreshRate, TimeUnit.MINUTES);
 		}
 
 		private void addNewRSSFeed(final URL url) {

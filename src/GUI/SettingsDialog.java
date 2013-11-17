@@ -27,6 +27,7 @@ public class SettingsDialog extends RSSDialog {
 		super(frame, "Settings");
 		setSize(450, 250);
 		box = new JCheckBox("Automatically update feeds");
+		box.setSelected(MainFrame.refreshFeeds);
 		box.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
@@ -37,7 +38,6 @@ public class SettingsDialog extends RSSDialog {
 				}
 			}
 		});
-		box.setSelected(MainFrame.refreshFeeds);
 		Utils.setGBC(gc, 1, 1, 1, 1, GridBagConstraints.BOTH);
 		gc.weightx = 1;
 		gc.weighty = 1;
@@ -47,6 +47,7 @@ public class SettingsDialog extends RSSDialog {
 		refreshPanel = new JPanel(new BorderLayout());
 		sliderLabel = new JLabel("Minutes between automatic refreshes: " + MainFrame.refreshRate, JLabel.CENTER);
 		refreshPanel.add(sliderLabel, BorderLayout.NORTH);
+		// TODO NEXT: The range needs sorting out, 0 is an illegalargument 
 		refreshSlider = new JSlider(JSlider.HORIZONTAL, 0, 360, MainFrame.refreshRate);
 		refreshSlider.addChangeListener(new ChangeListener() {
 			@Override
@@ -59,8 +60,8 @@ public class SettingsDialog extends RSSDialog {
 		refreshSlider.setMinorTickSpacing(20);
 		refreshSlider.setPaintTicks(true);
 		refreshSlider.setPaintLabels(true);
-		refreshPanel.add(refreshSlider, BorderLayout.CENTER);
 		setRefreshPanelEnabled(MainFrame.refreshFeeds);
+		refreshPanel.add(refreshSlider, BorderLayout.CENTER);
 		Utils.setGBC(gc, 1, 2, 1, 1, GridBagConstraints.BOTH);
 		gc.weighty = 4;
 		add(refreshPanel, gc);
@@ -80,16 +81,21 @@ public class SettingsDialog extends RSSDialog {
 	}
 
 	public class ButtonListener implements ActionListener {
-
+		private int refreshGap;
+		private boolean refreshFeeds;
+		
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == confirmButton) {
-				
+				refreshFeeds = box.isSelected();
+				if(refreshFeeds) {
+					refreshGap = refreshSlider.getValue();
+				}
+				rssEventListener.settingsChanged(refreshFeeds, refreshGap);
+				SettingsDialog.this.dispose();
 			} else if (e.getSource() == cancelButton) {
-				System.out.println("Cancelled!");
 				SettingsDialog.this.dispose();
 			}
-			System.out.println("here 2");
 		}
 	}
 }

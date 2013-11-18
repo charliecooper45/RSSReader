@@ -2,6 +2,7 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -48,7 +49,7 @@ public class SettingsDialog extends RSSDialog {
 		sliderLabel = new JLabel("Minutes between automatic refreshes: " + MainFrame.refreshRate, JLabel.CENTER);
 		refreshPanel.add(sliderLabel, BorderLayout.NORTH);
 		// TODO NEXT: The range needs sorting out, 0 is an illegalargument 
-		refreshSlider = new JSlider(JSlider.HORIZONTAL, 0, 360, MainFrame.refreshRate);
+		refreshSlider = new JSlider(JSlider.HORIZONTAL, 1, 15, MainFrame.refreshRate);
 		refreshSlider.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
@@ -56,14 +57,15 @@ public class SettingsDialog extends RSSDialog {
 				sliderLabel.setText("Minutes between automatic refreshes: " + slider.getValue());
 			}
 		});
-		refreshSlider.setMajorTickSpacing(60);
-		refreshSlider.setMinorTickSpacing(20);
+		refreshSlider.setMajorTickSpacing(2);
+		refreshSlider.setMinorTickSpacing(1);
 		refreshSlider.setPaintTicks(true);
 		refreshSlider.setPaintLabels(true);
 		setRefreshPanelEnabled(MainFrame.refreshFeeds);
 		refreshPanel.add(refreshSlider, BorderLayout.CENTER);
 		Utils.setGBC(gc, 1, 2, 1, 1, GridBagConstraints.BOTH);
 		gc.weighty = 4;
+		gc.insets = new Insets(0, 10, 0, 10);
 		add(refreshPanel, gc);
 
 		buttonListener = new ButtonListener();
@@ -71,6 +73,7 @@ public class SettingsDialog extends RSSDialog {
 		confirmButton.addActionListener(buttonListener);
 		Utils.setGBC(gc, 1, 3, 1, 1, GridBagConstraints.BOTH);
 		gc.weighty = 1;
+		gc.insets = new Insets(0, 0, 0, 0);
 		add(buttonPanel, gc);
 		// Add functionality to a) automatically refresh feeds or not b) setup speed of refreshes
 	}

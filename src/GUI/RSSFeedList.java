@@ -4,12 +4,18 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -28,6 +34,7 @@ public class RSSFeedList extends JPanel {
 	private RSSFeedBean rssFeed;
 	private JLabel titleLabel;
 	private JList<RSSMessageBean> messageList;
+	private JPopupMenu popupMenu;
 	private DefaultListModel<RSSMessageBean> rssModel;
 	private RSSMessageSelectedListener rssMessageSelectedListener;
 
@@ -42,7 +49,6 @@ public class RSSFeedList extends JPanel {
 		add(titleLabel, BorderLayout.NORTH);
 		messageList = new JList<>();
 		messageList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				if (!e.getValueIsAdjusting()) {
@@ -54,6 +60,15 @@ public class RSSFeedList extends JPanel {
 				}
 			}
 		});
+		messageList.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if(e.getButton() == MouseEvent.BUTTON3) {
+					messageList.setSelectedIndex(messageList.locationToIndex(e.getPoint()));
+					popupMenu.show(messageList, e.getX(), e.getY());
+				}
+			}
+		});
 		messageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		messageList.setCellRenderer(new ListRenderer());
 		messageList.setBorder(BorderFactory.createEtchedBorder());
@@ -61,6 +76,18 @@ public class RSSFeedList extends JPanel {
 		messageList.setModel(rssModel);
 		add(messageList, BorderLayout.CENTER);
 		setBorder(BorderFactory.createEtchedBorder());
+		
+		// Setup the popup menu
+		popupMenu = new JPopupMenu();
+		JMenuItem markUnread = new JMenuItem("Mark as unread");
+		markUnread.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				messageList.getSelectedValue().setRead(false);
+			}
+		});
+		popupMenu.add(markUnread);
+		messageList.setComponentPopupMenu(popupMenu);
 	}
 
 	/**

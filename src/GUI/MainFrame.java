@@ -49,13 +49,14 @@ public class MainFrame extends JFrame {
 
 	public MainFrame() {
 		super("RSS Reader");
+		setIconImage(Utils.createIcon("/resources/images/rss-icon.png").getImage());
 		setExtendedState(JFrame.MAXIMIZED_BOTH);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				
-				
+				prefs.putBoolean("refreshFeeds", MainFrame.refreshFeeds);
+				prefs.putInt("refreshRate", MainFrame.refreshRate);
 				rssFeedsPanel.cancelAutomaticUpdates();
 				List<RSSFeedBean> feeds = new ArrayList<>();
 				for (RSSFeedList list : rssFeedsPanel.rssFeeds) {
@@ -95,12 +96,10 @@ public class MainFrame extends JFrame {
 			@Override
 			public void settingsChanged(boolean refreshFeeds, int refreshRate) {
 				MainFrame.refreshFeeds = refreshFeeds;
-				MainFrame.refreshRate = refreshRate;
-				prefs.putBoolean("refreshFeeds", refreshFeeds);
-				prefs.putInt("refreshRate", refreshRate);
 				if(!refreshFeeds) {
 					rssFeedsPanel.cancelAutomaticUpdates();
 				} else {
+					MainFrame.refreshRate = refreshRate;
 					rssFeedsPanel.startAutomaticUpdates();
 				}
 			}
@@ -181,8 +180,9 @@ public class MainFrame extends JFrame {
 				public void run() {
 					for (RSSFeedList list : rssFeeds) {
 						try {
-							//TODO NEXT: Possible synchronize on the list object? Instead of in the coord
-							coord.updateRSSFeed(list.getRssFeed());
+							synchronized (list) {
+								coord.updateRSSFeed(list.getRssFeed());
+							}
 						} catch (XMLStreamException | IOException e) {
 							JOptionPane.showMessageDialog(MainFrame.this, "Could not update RSS feeds", "Error", JOptionPane.ERROR_MESSAGE);
 						}
@@ -192,7 +192,9 @@ public class MainFrame extends JFrame {
 						@Override
 						public void run() {
 							for(RSSFeedList list : rssFeeds) {
-								list.updateRSSMessages();
+								synchronized (list) {
+									list.updateRSSMessages();
+								}
 								System.out.println("RSS FEED MESSAGES:" + list.getRssFeed().getMessages());
 							}
 						}

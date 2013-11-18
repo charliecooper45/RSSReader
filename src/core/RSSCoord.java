@@ -60,7 +60,7 @@ public enum RSSCoord {
 	 * @throws IOException 
 	 * @throws XMLStreamException 
 	 */
-	public synchronized void updateRSSFeed(RSSFeedBean bean) throws XMLStreamException, IOException {
+	public void updateRSSFeed(RSSFeedBean bean) throws XMLStreamException, IOException {
 		List<RSSMessageBean> updatedMessages;
 		List<RSSMessageBean> currentMessages = bean.getMessages();
 		URL url = bean.getUrl();
